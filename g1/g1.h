@@ -13,6 +13,7 @@ class g1 : public Withg1Layout<TopWindow> {
 public:
 	typedef g1 CLASSNAME;
 	g1();
+	void OnActionEdFilter();
 };
 
 #endif

@@ -4,8 +4,8 @@
 #include <math.h>
 
 #define pi M_PI
-#define SCREEN_DIVX (100.0)
-#define SCREEN_DIVY (100.0)
+#define SCREEN_DIVX (50.0)
+#define SCREEN_DIVY (50.0)
 struct GrafNode{
 	float x;
 	float y;
@@ -14,6 +14,7 @@ struct GrafNode{
 	float r;
 	String label;
 	bool sel;
+	bool filter;
 	int opid;
 };
 struct GrafEdge{
@@ -32,9 +33,24 @@ struct Graf : public Ctrl {
     Point mOffset;
     Point mTool;
     float mZoomLevel;
-    
+    bool filter;
+    void SetFilter(const String& f){
+        if (f.IsEmpty()){
+            filter=false;;
+        }else
+        for(int i=0; i<nodes.GetCount(); i++){
+            GrafNode& n= nodes[i];
+            if (n.label.Find(f)>0){
+                n.filter=true;
+                filter=true;
+            }else{
+                n.filter=false;
+            }
+        }
+        Refresh();
+    }
     void initDb(){
-        #define MAXNODE (30)
+        #define MAXNODE (90)
         for(int i=0; i<MAXNODE; i++){
             GrafNode& n= nodes.Add();
             n.x= sin(i*2*pi/(float)MAXNODE)*100.0+110;
@@ -62,25 +78,65 @@ struct Graf : public Ctrl {
         mOffset.y=50;
         mZoomLevel=50;
     }
-    virtual void Paint(Draw& w) {
-        w.DrawRect(GetSize(), White());
+    void PaintNode(Draw& w, GrafNode& n){
+        float w1=n.r;
+        float w2=n.r*2;
+        int pen=1;
+        Color color=LtGray();
+        Color pencolor=LtGray();
         Color textcolor=LtGray();
-        //background
         if (sel<0){
             textcolor=Black();
+            color=Gray();
+        }
+        if (filter){
+            textcolor=Color(0xe0, 0xe0, 0xe0);
+            color=Color(0xf0, 0xf0, 0xf0);
+            if (n.filter){
+	            textcolor=Black();
+	            color=LtGray();
+	        }
+        }
+        
+        if (n.sel){
+            color=LtRed();
+            textcolor=Black();
+        }
+        w.DrawEllipse( n.sx-w1, n.sy-w1, w2, w2, color, pen, pencolor);
+        //w.DrawText(n.sx, n.sy-10, AsString(i), Arial(), textcolor);
+        w.DrawText(n.sx, n.sy, n.label, Arial(), textcolor);
+    }
+    virtual void Paint(Draw& w) {
+        w.DrawRect(GetSize(), White());
+        Color defaulttextcolor=LtGray();
+        Color defaultcolor=LtGray();
+        
+        if (sel<0){
+            defaulttextcolor=Black();
+            defaultcolor=Gray();
+        }
+        if (filter){
+            defaulttextcolor=Color(0xe0, 0xe0, 0xe0);
+            defaultcolor=Color(0xf0, 0xf0, 0xf0);
         }
         for(int i=0; i<nodes.GetCount(); i++){
             GrafNode& n= nodes[i];
             n.sx=n.x*mZoomLevel/SCREEN_DIVX+mOffset.x;
             n.sy=n.y*mZoomLevel/SCREEN_DIVY+mOffset.y;
         }
+        //background
         for(int i=0; i<edges.GetCount(); i++){
             GrafEdge& e=edges[i];
             GrafNode& source= nodes[e.source];
             GrafNode& target= nodes[e.target];
-            Color color=LtGray();
+            Color color=defaultcolor;
+            Color textcolor=defaulttextcolor;
             if (source.sel || target.sel){
 				continue;
+            }
+            if (source.filter || target.filter){
+                textcolor=Black();
+                color=LtGray();
             }
             w.DrawLine(source.sx, source.sy, target.sx, target.sy, 15*e.weight, color);
             float dy=(target.sy-source.sy);
@@ -93,24 +149,17 @@ struct Graf : public Ctrl {
         }
         for(int i=0; i<nodes.GetCount(); i++){
             GrafNode& n= nodes[i];
-            Color color=Gray();
-            Color pencolor=LtGray();
-            int pen=1;
             if (n.sel){
                 continue;
             }
-            float w1=n.r;
-            float w2=n.r*2;
-            w.DrawEllipse( n.sx-w1, n.sy-w1, w2, w2, color, pen, pencolor);
-            w.DrawText(n.sx, n.sy-10, AsString(i));
-            w.DrawText(n.sx, n.sy, n.label);
+            PaintNode(w, n);
         }
         //foreground
         for(int i=0; i<edges.GetCount(); i++){
             GrafEdge& e=edges[i];
             GrafNode& source= nodes[e.source];
             GrafNode& target= nodes[e.target];
-            Color color=LtGray();
+            Color color=defaultcolor;
             Color textcolor=color;
             if (source.sel || target.sel){
 				color=LtRed();
@@ -127,16 +176,8 @@ struct Graf : public Ctrl {
         }
         for(int i=0; i<nodes.GetCount(); i++){
             GrafNode& n= nodes[i];
-            Color color=Gray();
-            Color pencolor=LtGray();
-            int pen=1;
             if (n.sel){
-                color=LtRed();
-	            float w1=n.r;
-	            float w2=n.r*2;
-	            w.DrawEllipse( n.sx-w1, n.sy-w1, w2, w2, color, pen, pencolor);
-	            w.DrawText(n.sx, n.sy-10, AsString(i));
-	            w.DrawText(n.sx, n.sy, n.label);
+                PaintNode(w, n);
             }
         }
     }
@@ -221,7 +262,7 @@ struct Graf : public Ctrl {
     }
      void MouseWheel(Point p, int zdelta, dword keyflags)override{
         const double oldZoomLevel = mZoomLevel;
-        mZoomLevel = max(1.0, min(mZoomLevel + (zdelta > 0.0 ? 1.0 : -1.0), 300.0));
+        mZoomLevel = max(1.0, min(mZoomLevel + (zdelta > 0.0 ? 1.0 : -1.0), 900.0));
         const Point cursorPosRelativeToOffset = p - mOffset;
 
         if (mZoomLevel != oldZoomLevel) {

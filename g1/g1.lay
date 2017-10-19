@@ -1,4 +1,5 @@
 LAYOUT(g1Layout, 592, 368)
 	ITEM(Graf, graf, HSizePosZ(4, 8).VSizePosZ(48, 4))
+	ITEM(EditString, edFilter, LeftPosZ(4, 132).TopPosZ(24, 19))
 END_LAYOUT
 
