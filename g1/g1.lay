@@ -1,0 +1,4 @@
+LAYOUT(g1Layout, 592, 368)
+	ITEM(Graf, graf, HSizePosZ(4, 8).VSizePosZ(48, 4))
+END_LAYOUT
+

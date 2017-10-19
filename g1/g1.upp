@@ -1,0 +1,15 @@
+description "g1\377";
+
+uses
+	CtrlLib;
+
+file
+	g1.h,
+	main.cpp,
+	graf.h,
+	graf.cpp,
+	g1.lay;
+
+mainconfig
+	"" = "GUI";
+
