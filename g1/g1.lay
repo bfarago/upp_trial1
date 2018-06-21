@@ -1,5 +1,8 @@
 LAYOUT(g1Layout, 592, 368)
 	ITEM(Graf, graf, HSizePosZ(4, 8).VSizePosZ(48, 4))
 	ITEM(EditString, edFilter, LeftPosZ(4, 132).TopPosZ(24, 19))
+	ITEM(EditDoubleSpin, eRadius, LeftPosZ(144, 72).TopPosZ(24, 19))
+	ITEM(Option, eDirected, SetLabel(t_("Directed")).LeftPosZ(484, 68).TopPosZ(24, 16))
+	ITEM(EditString, eTitle, LeftPosZ(220, 208).TopPosZ(24, 19))
 END_LAYOUT
 

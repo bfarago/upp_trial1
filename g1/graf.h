@@ -34,6 +34,7 @@ struct Graf : public Ctrl {
     Point mTool;
     float mZoomLevel;
     bool filter;
+    Event<GrafNode*> WhenNodeSet;
     void SetFilter(const String& f){
         if (f.IsEmpty()){
             filter=false;;
@@ -181,22 +182,31 @@ struct Graf : public Ctrl {
             }
         }
     }
-    
+    void setSel(int i){
+        if (sel!=i){
+            sel=i;
+            if (sel>=0) WhenNodeSet(&nodes[sel]);
+        }
+    }
     virtual void LeftDown(Point p, dword) {
-        sel=-1;
+        int hit=-1;
         for(int i=0; i<nodes.GetCount(); i++){
             GrafNode& n= nodes[i];
             float dx= (n.sx-p.x);
             float dy= (n.sy-p.y);
             float dd= dx*dx+dy*dy;
             n.sel= ((n.r*n.r)>dd);
-            if (n.sel) sel=i;
+            if (n.sel){
+	            hit=i;
+	            //break;
+            }
         }
+        setSel(hit);
         mTool=p;
         Refresh();
     }
     virtual void LeftUp(Point p, dword){
-        sel=-1;
+        setSel(-1);
     }
     void RecurseDist(Point p, int n, int deep){
         if (n<0)return;

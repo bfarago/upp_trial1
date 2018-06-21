@@ -14,6 +14,7 @@ public:
 	typedef g1 CLASSNAME;
 	g1();
 	void OnActionEdFilter();
+	void OnNode(GrafNode* node);
 };
 
 #endif
